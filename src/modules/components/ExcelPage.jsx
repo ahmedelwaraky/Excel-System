@@ -16,7 +16,7 @@ export default function ExcelTable({ sheetId }) {
       const { data: hData } = await supabase
         .from("excel_headers")
         .select("*")
-        .eq("sheet_id", sheetId) // ← الفلتر
+        .eq("sheet_id", sheetId)
         .limit(1)
         .single();
 
@@ -26,7 +26,7 @@ export default function ExcelTable({ sheetId }) {
         const defaultHeaders = ["الاسم", "العمر", "البريد الإلكتروني"];
         await supabase.from("excel_headers").insert({
           headers: defaultHeaders,
-          sheet_id: sheetId, // ← مرتبط بالورقة
+          sheet_id: sheetId,
         });
         setHeaders(defaultHeaders);
       }
@@ -34,16 +34,16 @@ export default function ExcelTable({ sheetId }) {
       const { data: rData } = await supabase
         .from("excel_rows")
         .select("*")
-        .eq("sheet_id", sheetId) // ← الفلتر
+        .eq("sheet_id", sheetId)
         .order("row_order", { ascending: true });
 
       setRows(rData || []);
       setLoading(false);
     }
     fetchData();
-  }, [sheetId]); // ← بيتحدث لما الورقة تتغير
+  }, [sheetId]);
 
-  // في addRow أضف sheet_id
+  // ✅ دالة واحدة بس — فيها sheet_id
   async function addRow() {
     const rowData = {};
     headers.forEach((h) => (rowData[h] = ""));
@@ -55,30 +55,18 @@ export default function ExcelTable({ sheetId }) {
     if (data) setRows((prev) => [...prev, data]);
   }
 
-  // saveHeaders كمان تضيف sheet_id في الـ update
   const saveHeaders = useCallback(
     async (newHeaders) => {
       setSaveStatus("saving");
       await supabase
         .from("excel_headers")
         .update({ headers: newHeaders })
-        .eq("sheet_id", sheetId); // ← بدل neq("id", 0)
+        .eq("sheet_id", sheetId);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(""), 2000);
     },
     [sheetId],
   );
-
-  async function addRow() {
-    const rowData = {};
-    headers.forEach((h) => (rowData[h] = ""));
-    const { data } = await supabase
-      .from("excel_rows")
-      .insert({ row_data: rowData, row_order: rows.length })
-      .select()
-      .single();
-    if (data) setRows((prev) => [...prev, data]);
-  }
 
   async function updateCell(id, field, value) {
     setRows((prev) =>
@@ -260,7 +248,6 @@ export default function ExcelTable({ sheetId }) {
         <table className="min-w-full border-collapse">
           <thead>
             <tr className="bg-[#e8f5e9] border-b border-[#c6d9c6]">
-              {/* Row number */}
               <th className="w-10 min-w-[40px] sticky top-0 z-10 bg-[#e8f5e9] border-l border-[#c6d9c6]" />
 
               {headers.map((h) => (
@@ -312,12 +299,7 @@ export default function ExcelTable({ sheetId }) {
                 <td colSpan={headers.length + 2} className="py-20 text-center">
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-10 h-10 rounded-full bg-[#e8f5e9] flex items-center justify-center">
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 18 18"
-                        fill="none"
-                      >
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                         <rect
                           x="2"
                           y="2"
