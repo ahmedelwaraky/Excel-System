@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase";
-// import { supabase } from "../../lib/supabase";
 
 export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -9,31 +8,31 @@ export default function LoginPage({ onLogin }) {
   const [error, setError]       = useState("");
   const [showPass, setShowPass] = useState(false);
 
- async function handleLogin() {
-  if (!username.trim() || !password.trim()) {
-    setError("من فضلك أدخل جميع البيانات");
-    return;
+  async function handleLogin() {
+    if (!username.trim() || !password.trim()) {
+      setError("من فضلك أدخل جميع البيانات");
+      return;
+    }
+    setLoading(true);
+    setError("");
+
+    const { data, error: err } = await supabase
+      .from("users")
+      .select("*")
+      .eq("username", username.trim())
+      .eq("password", password.trim())
+      .maybeSingle();
+
+    setLoading(false);
+
+    if (err || !data) {
+      setError("اسم المستخدم أو كلمة المرور غير صحيحة");
+      return;
+    }
+
+    localStorage.setItem("excel_user", JSON.stringify(data));
+    onLogin(data);
   }
-  setLoading(true);
-  setError("");
-
-  const { data, error: err } = await supabase
-    .from("users")
-    .select("*")
-    .eq("username", username.trim())
-    .eq("password", password.trim())
-    .maybeSingle();   // ← التغيير هنا بس
-
-  setLoading(false);
-
-  if (err || !data) {
-    setError("اسم المستخدم أو كلمة المرور غير صحيحة");
-    return;
-  }
-
-  localStorage.setItem("excel_user", JSON.stringify(data));
-  onLogin(data);
-}
 
   return (
     <div
@@ -157,7 +156,20 @@ export default function LoginPage({ onLogin }) {
           </button>
         </div>
 
-        <p className="text-center text-white/20 text-xs mt-5">
+        {/* Demo Credentials */}
+        <div className="mt-4 bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex flex-col gap-1.5">
+          <p className="text-green-400/70 text-xs font-semibold text-center mb-1">بيانات تجريبية</p>
+          <div className="flex justify-between text-xs">
+            <span className="text-white/40">اسم المستخدم</span>
+            <span className="text-white/80 font-mono">admin</span>
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-white/40">كلمة المرور</span>
+            <span className="text-white/80 font-mono">admin123</span>
+          </div>
+        </div>
+
+        <p className="text-center text-white/20 text-xs mt-4">
           تواصل مع المدير لاستعادة كلمة المرور
         </p>
       </div>
