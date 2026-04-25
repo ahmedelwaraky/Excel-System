@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import ExcelTable from "../components/ExcelPage";
 import { useSheets } from "../../hooks/useSheets";
-import LoginPage from "../Auth/page/LoginPage";
 
 function StatCard({ label, value, color, icon }) {
   const colors = {
@@ -44,36 +43,31 @@ function SectionTitle({ children }) {
   return <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 pt-3 pb-1">{children}</p>;
 }
 
-export default function Home() {
-  const [authUser, setAuthUser] = useState(() => {
-    try { const s = localStorage.getItem("excel_user"); return s ? JSON.parse(s) : null; }
-    catch { return null; }
-  });
-
+// ── currentUser و onLogout بييجوا من App.jsx ─────────────
+export default function Home({ currentUser, onLogout }) {
   const { sheets, activeSheetId, setActiveSheetId, addSheet, renameSheet, deleteSheet } = useSheets();
   const [editingSheetId, setEditingSheetId] = useState(null);
+  const [sidebarOpen, setSidebarOpen]       = useState(true);
 
   const [filters, setFilters] = useState({
     status: null, priority: null, rowType: null, myRows: false, search: "",
   });
 
-  // ── Stats keys match ExcelTable output ─────────────────
   const [stats, setStats] = useState({
     total: 0,
     "جديد": 0, "قيد المعالجة": 0, "مكتمل": 0, "مؤرشف": 0,
     "عاجل": 0, "بريد وارد": 0, "بريد صادر": 0,
   });
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  function setFilter(key, value) {
+    setFilters(prev => ({ ...prev, [key]: prev[key] === value ? null : value }));
+  }
+  function resetFilters() {
+    setFilters({ status: null, priority: null, rowType: null, myRows: false, search: "" });
+  }
 
-  function handleLogout() { localStorage.removeItem("excel_user"); setAuthUser(null); }
-  function setFilter(key, value) { setFilters(prev => ({ ...prev, [key]: prev[key] === value ? null : value })); }
-  function resetFilters() { setFilters({ status: null, priority: null, rowType: null, myRows: false, search: "" }); }
-
-  if (!authUser) return <LoginPage onLogin={setAuthUser} />;
-
-  const initials = authUser.full_name?.split(" ").map(w => w[0]).join("").slice(0, 2)
-    || authUser.username.slice(0, 2).toUpperCase();
+  const initials = currentUser.full_name?.split(" ").map(w => w[0]).join("").slice(0, 2)
+    || currentUser.username.slice(0, 2).toUpperCase();
 
   const hasActiveFilters = filters.status || filters.priority || filters.rowType || filters.myRows || filters.search;
 
@@ -107,7 +101,7 @@ export default function Home() {
             <input
               value={filters.search}
               onChange={e => setFilters(p => ({ ...p, search: e.target.value }))}
-              placeholder="🔍 بحث في المكاتبات... (الموضوع، الجهة، الرقم...)"
+              placeholder="🔍 بحث في المكاتبات..."
               className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/40 outline-none focus:bg-white/20 focus:border-white/40 transition-all text-right"
             />
             {filters.search && (
@@ -125,10 +119,10 @@ export default function Home() {
               {initials}
             </div>
             <span className="text-white text-xs font-medium hidden sm:block">
-              {authUser.full_name || authUser.username}
+              {currentUser.full_name || currentUser.username}
             </span>
           </div>
-          <button onClick={handleLogout} title="تسجيل الخروج"
+          <button onClick={onLogout} title="تسجيل الخروج"
             className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M5 2H3a1 1 0 00-1 1v8a1 1 0 001 1h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
@@ -171,14 +165,13 @@ export default function Home() {
 
             <div className="mx-3 border-t border-[#e8f0e8]"/>
 
-            {/* الحالة */}
             <SectionTitle>الحالة</SectionTitle>
             <div className="px-3 flex flex-col gap-0.5">
               {[
-                { label: "جديد",          dot: "#3b82f6", key: "جديد" },
-                { label: "قيد المعالجة",  dot: "#f59e0b", key: "قيد المعالجة" },
-                { label: "مكتمل",         dot: "#22c55e", key: "مكتمل" },
-                { label: "مؤرشف",         dot: "#9ca3af", key: "مؤرشف" },
+                { label: "جديد",         dot: "#3b82f6", key: "جديد" },
+                { label: "قيد المعالجة", dot: "#f59e0b", key: "قيد المعالجة" },
+                { label: "مكتمل",        dot: "#22c55e", key: "مكتمل" },
+                { label: "مؤرشف",        dot: "#9ca3af", key: "مؤرشف" },
               ].map(({ label, dot, key }) => (
                 <FilterItem key={key} label={label} dot={dot} count={stats[key]}
                   active={filters.status === key} onClick={() => setFilter("status", key)} />
@@ -187,13 +180,12 @@ export default function Home() {
 
             <div className="mx-3 border-t border-[#e8f0e8] mt-2"/>
 
-            {/* الأولوية */}
             <SectionTitle>الأولوية</SectionTitle>
             <div className="px-3 flex flex-col gap-0.5">
               {[
-                { label: "🔥 عاجل", key: "عاجل", count: stats["عاجل"] },
-                { label: "⚡ عالي", key: "عالي" },
-                { label: "— عادي", key: "عادي" },
+                { label: " عاجل", key: "عاجل", count: stats["عاجل"] },
+                // { label: " عالي", key: "عالي" },
+                { label: "عادي",  key: "عادي" },
               ].map(({ label, key, count }) => (
                 <FilterItem key={key} label={label} count={count}
                   active={filters.priority === key} onClick={() => setFilter("priority", key)} />
@@ -202,14 +194,13 @@ export default function Home() {
 
             <div className="mx-3 border-t border-[#e8f0e8] mt-2"/>
 
-            {/* النوع */}
             <SectionTitle>نوع المكاتبة</SectionTitle>
             <div className="px-3 flex flex-col gap-0.5 pb-3">
               {[
-                { label: "📥 بريد وارد",  key: "بريد وارد",  count: stats["بريد وارد"] },
-                { label: "📤 بريد صادر",  key: "بريد صادر",  count: stats["بريد صادر"] },
-                { label: "📁 داخلي",      key: "داخلي" },
-                { label: "📢 تعميم",      key: "تعميم" },
+                { label: " بريد وارد", key: "بريد وارد", count: stats["بريد وارد"] },
+                { label: " بريد صادر", key: "بريد صادر", count: stats["بريد صادر"] },
+                // { label: " داخلي",     key: "داخلي" },
+                // { label: " تعميم",     key: "تعميم" },
               ].map(({ label, key, count }) => (
                 <FilterItem key={key} label={label} count={count}
                   active={filters.rowType === key} onClick={() => setFilter("rowType", key)} />
@@ -218,7 +209,6 @@ export default function Home() {
 
             <div className="mx-3 border-t border-[#e8f0e8]"/>
 
-            {/* الأوراق */}
             <SectionTitle>الأوراق</SectionTitle>
             <div className="px-3 flex flex-col gap-0.5 pb-3">
               {sheets.map(sheet => (
@@ -226,10 +216,10 @@ export default function Home() {
                   className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all text-right ${
                     activeSheetId === sheet.id ? "bg-[#1d6f42] text-white font-semibold" : "text-gray-600 hover:bg-[#e8f5e9] hover:text-[#1d6f42]"
                   }`}>
-                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                  {/* <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                     <rect x="0.5" y="0.5" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.1"/>
                     <path d="M0.5 4h10M4 4v7" stroke="currentColor" strokeWidth="1.1"/>
-                  </svg>
+                  </svg> */}
                   {sheet.name}
                 </button>
               ))}
@@ -249,12 +239,12 @@ export default function Home() {
 
           {/* Stats */}
           <div className="flex-shrink-0 px-4 pt-3 pb-2 flex gap-2 overflow-x-auto">
-            <StatCard label="الإجمالي"      value={stats.total}            color="green"  />
-            <StatCard label="بريد وارد"      value={stats["بريد وارد"]}     color="blue"   />
-            <StatCard label="بريد صادر"      value={stats["بريد صادر"]}     color="purple" />
-            <StatCard label="عاجل"           value={stats["عاجل"]}          color="red"   />
-            <StatCard label="قيد المعالجة"   value={stats["قيد المعالجة"]}  color="amber"  />
-            <StatCard label="مكتمل"          value={stats["مكتمل"]}         color="green"  />
+            <StatCard label="الإجمالي"     value={stats.total}           color="green"  />
+            <StatCard label="بريد وارد"     value={stats["بريد وارد"]}    color="blue"   />
+            <StatCard label="بريد صادر"     value={stats["بريد صادر"]}    color="purple" />
+            <StatCard label="عاجل"          value={stats["عاجل"]}         color="red"    />
+            <StatCard label="قيد المعالجة"  value={stats["قيد المعالجة"]} color="amber"  />
+            <StatCard label="مكتمل"         value={stats["مكتمل"]}        color="green"  />
           </div>
 
           {/* Active filters */}
@@ -276,7 +266,7 @@ export default function Home() {
               <ExcelTable
                 sheetId={activeSheetId}
                 filters={filters}
-                currentUser={authUser}
+                currentUser={currentUser}
                 onStatsUpdate={setStats}
               />
             )}
@@ -313,6 +303,7 @@ export default function Home() {
               className="px-3 py-1.5 text-sm text-gray-400 hover:text-[#1d6f42] hover:bg-white/60 border-l border-[#c6d9c6] transition-colors flex-shrink-0">
               +
             </button>
+            
           </div>
         </div>
       </div>

@@ -1,37 +1,58 @@
+// LoginPage.jsx — صفحة تسجيل الدخول (مصلّحة)
+// ✅ FIX: معالجة أفضل للأخطاء + التحقق من البيانات قبل الإرسال
+
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase";
 
 export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
   const [showPass, setShowPass] = useState(false);
 
   async function handleLogin() {
-    if (!username.trim() || !password.trim()) {
+    const user = username.trim();
+    const pass = password.trim();
+
+    if (!user || !pass) {
       setError("من فضلك أدخل جميع البيانات");
       return;
     }
+
     setLoading(true);
     setError("");
 
-    const { data, error: err } = await supabase
-      .from("users")
-      .select("*")
-      .eq("username", username.trim())
-      .eq("password", password.trim())
-      .maybeSingle();
+    try {
+      const { data, error: err } = await supabase
+        .from("users")
+        .select("*")
+        .eq("username", user)
+        .eq("password", pass)
+        .maybeSingle();
 
-    setLoading(false);
+      if (err) {
+        // ✅ FIX: طباعة الخطأ الكامل للـ console لتسهيل الـ debugging
+        console.error("Supabase error:", err);
+        setError("خطأ في الاتصال بالسيرفر: " + err.message);
+        return;
+      }
 
-    if (err || !data) {
-      setError("اسم المستخدم أو كلمة المرور غير صحيحة");
-      return;
+      if (!data) {
+        setError("اسم المستخدم أو كلمة المرور غير صحيحة");
+        return;
+      }
+
+      // ✅ حفظ بيانات المستخدم
+      localStorage.setItem("excel_user", JSON.stringify(data));
+      onLogin(data);
+
+    } catch (e) {
+      console.error("Login error:", e);
+      setError("حدث خطأ غير متوقع، حاول مرة أخرى");
+    } finally {
+      setLoading(false);
     }
-
-    localStorage.setItem("excel_user", JSON.stringify(data));
-    onLogin(data);
   }
 
   return (
@@ -39,17 +60,17 @@ export default function LoginPage({ onLogin }) {
       className="h-screen flex items-center justify-center bg-gradient-to-br from-[#0d1f14] to-[#0f2a1a]"
       dir="rtl"
     >
-      {/* Background pattern */}
+      {/* خلفية دوائر */}
       <div className="absolute inset-0 opacity-5 pointer-events-none select-none overflow-hidden">
         {Array.from({ length: 12 }).map((_, i) => (
           <div
             key={i}
             className="absolute border border-white rounded-full"
             style={{
-              width: `${(i + 1) * 120}px`,
-              height: `${(i + 1) * 120}px`,
-              top: "50%",
-              left: "50%",
+              width:     `${(i + 1) * 120}px`,
+              height:    `${(i + 1) * 120}px`,
+              top:       "50%",
+              left:      "50%",
               transform: "translate(-50%, -50%)",
             }}
           />
@@ -57,6 +78,7 @@ export default function LoginPage({ onLogin }) {
       </div>
 
       <div className="relative w-full max-w-[360px] px-4">
+
         {/* Logo */}
         <div className="flex flex-col items-center mb-8 gap-3">
           <div className="w-16 h-16 bg-[#1d6f42] rounded-2xl flex items-center justify-center shadow-2xl shadow-green-900/50">
@@ -68,7 +90,7 @@ export default function LoginPage({ onLogin }) {
             </svg>
           </div>
           <div className="text-center">
-            <h1 className="text-white text-xl font-bold tracking-tight">جدول البيانات</h1>
+            <h1 className="text-white text-xl font-bold tracking-tight">نظام المكاتبات</h1>
             <p className="text-green-400/70 text-xs mt-1">سجّل دخولك للمتابعة</p>
           </div>
         </div>
@@ -92,8 +114,8 @@ export default function LoginPage({ onLogin }) {
             <label className="text-xs text-green-300/70 font-medium">اسم المستخدم</label>
             <input
               value={username}
-              onChange={(e) => { setUsername(e.target.value); setError(""); }}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              onChange={e => { setUsername(e.target.value); setError(""); }}
+              onKeyDown={e => e.key === "Enter" && handleLogin()}
               placeholder="أدخل اسم المستخدم"
               autoComplete="username"
               className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#1d6f42] focus:ring-2 focus:ring-[#1d6f42]/30 transition-all text-right"
@@ -107,8 +129,8 @@ export default function LoginPage({ onLogin }) {
               <input
                 type={showPass ? "text" : "password"}
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                onChange={e => { setPassword(e.target.value); setError(""); }}
+                onKeyDown={e => e.key === "Enter" && handleLogin()}
                 placeholder="أدخل كلمة المرور"
                 autoComplete="current-password"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 pr-4 pl-10 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#1d6f42] focus:ring-2 focus:ring-[#1d6f42]/30 transition-all text-right"

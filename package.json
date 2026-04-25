@@ -13,11 +13,12 @@
     "@supabase/supabase-js": "^2.103.3",
     "@tailwindcss/vite": "^4.2.2",
     "dexie": "^4.4.2",
+    "exceljs": "^4.4.0",
+    "lucide-react": "^1.11.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.1",
-    "tailwindcss": "^4.2.2",
-    "xlsx": "^0.18.5"
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
