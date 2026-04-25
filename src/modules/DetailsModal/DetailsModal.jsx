@@ -1,5 +1,4 @@
-// DetailsModal.jsx — مودال تفاصيل المكاتبة (مصلّح)
-// ✅ FIX: المفاتيح متطابقة الآن مع row_data المخزنة في Supabase
+// DetailsModal.jsx — مودال تفاصيل المكاتبة — Responsive
 
 const BADGES = {
   "الحالة": {
@@ -21,11 +20,9 @@ const BADGES = {
   },
 };
 
-// ✅ FIX: المفاتيح هنا = نفس مفاتيح row_data اللي بتتخزن في قاعدة البيانات
 const SECTIONS = [
   {
     title: "البيانات الأساسية",
-    // icon: "📄",
     fields: [
       { key: "نوع المكاتبة",   wide: false },
       { key: "رقم المكاتبة",   wide: false },
@@ -36,7 +33,6 @@ const SECTIONS = [
   },
   {
     title: "الجهة المراسلة",
-    // icon: "🏢",
     fields: [
       { key: "الجهة الرئيسية", wide: false },
       { key: "الجهة الفرعية",  wide: false },
@@ -44,9 +40,8 @@ const SECTIONS = [
   },
   {
     title: "التصنيف والحفظ",
-    // icon: "🗂️",
     fields: [
-{ key: "رقم الحفظ", label: "دوسية الحفظ", wide: false },
+      { key: "رقم الحفظ", label: "دوسية الحفظ", wide: false },
       { key: "الأولوية",     wide: false },
       { key: "الحالة",       wide: false },
       { key: "التصنيف",      wide: false },
@@ -56,7 +51,6 @@ const SECTIONS = [
   },
   {
     title: "الملاحظات",
-    // icon: "📝",
     fields: [
       { key: "ملاحظات", wide: true },
     ],
@@ -92,14 +86,15 @@ function FieldCell({ fieldKey, label, value, wide }) {
   const isBadge = BADGE_KEYS.has(fieldKey);
 
   return (
-    <div className={wide ? "col-span-2" : ""}>
+    // On mobile: always full width. On sm+: respect wide prop
+    <div className={wide ? "col-span-1 sm:col-span-2" : "col-span-1"}>
       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
         {displayLabel}
       </p>
       {isBadge && displayValue ? (
         <Badge category={fieldKey} value={displayValue} />
       ) : (
-        <p className={`text-sm font-medium text-gray-800 ${wide ? "leading-relaxed whitespace-pre-wrap" : "truncate"}`}>
+        <p className={`text-sm font-medium text-gray-800 ${wide ? "leading-relaxed whitespace-pre-wrap" : "break-words"}`}>
           {displayValue || <span className="text-gray-300 font-normal">—</span>}
         </p>
       )}
@@ -112,10 +107,7 @@ export default function DetailsModal({ row, headers = [], onClose, onDelete }) {
 
   const data = row.row_data || {};
 
-  // الحقول المعروفة في SECTIONS
   const knownKeys = new Set(SECTIONS.flatMap(s => s.fields.map(f => f.key)));
-
-  // ✅ حقول إضافية موجودة في البيانات بس مش في SECTIONS
   const extraKeys = Object.keys(data).filter(
     k => !knownKeys.has(k) && safeStr(data[k]) !== ""
   );
@@ -129,28 +121,27 @@ export default function DetailsModal({ row, headers = [], onClose, onDelete }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 sm:p-3"
       dir="rtl"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
-        style={{ maxHeight: "92vh" }}
+        className="w-full sm:max-w-2xl bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        style={{ maxHeight: "92vh", height: "92vh" }}
       >
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-[#1d6f42] shrink-0">
-          <div className="flex items-center gap-3">
-            {/* <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center text-base">📋</div> */}
-            <div>
+        <div className="flex items-center justify-between px-4 sm:px-5 py-4 bg-[#1d6f42] flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="min-w-0">
               <p className="text-white font-bold text-sm">تفاصيل المكاتبة</p>
               {safeStr(data["رقم المكاتبة"]) && (
-                <p className="text-white/60 text-[11px] mt-0.5">رقم: {safeStr(data["رقم المكاتبة"])}</p>
+                <p className="text-white/60 text-[11px] mt-0.5 truncate">رقم: {safeStr(data["رقم المكاتبة"])}</p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {safeStr(data["نوع المكاتبة"]) && (
               <Badge category="نوع المكاتبة" value={safeStr(data["نوع المكاتبة"])} />
             )}
@@ -158,7 +149,7 @@ export default function DetailsModal({ row, headers = [], onClose, onDelete }) {
               onClick={handleDelete}
               className="flex items-center gap-1 text-white/50 hover:text-red-300 text-xs px-2 py-1.5 rounded-lg hover:bg-white/10 transition-all"
             >
-              🗑 حذف
+              🗑 <span className="hidden sm:inline">حذف</span>
             </button>
             <button
               onClick={onClose}
@@ -170,21 +161,20 @@ export default function DetailsModal({ row, headers = [], onClose, onDelete }) {
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto flex-1 p-5 space-y-6">
+        <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-5 sm:space-y-6">
 
           {SECTIONS.map(section => {
-            // ✅ FIX: اعرض الـ section حتى لو الحقول فاضية — بس اخفيه لو كل حقوله فعلاً فاضية
             const hasAnyValue = section.fields.some(f => safeStr(data[f.key]) !== "");
             if (!hasAnyValue) return null;
 
             return (
               <div key={section.title}>
                 <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
-                  <span className="text-base">{section.icon}</span>
                   <span className="text-xs font-bold text-gray-600 tracking-wide">{section.title}</span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                {/* On mobile: single column, on sm+: 2 columns */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                   {section.fields.map(f => (
                     <FieldCell
                       key={f.key}
@@ -199,21 +189,14 @@ export default function DetailsModal({ row, headers = [], onClose, onDelete }) {
             );
           })}
 
-          {/* حقول إضافية */}
           {extraKeys.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
-                {/* <span className="text-base">➕</span> */}
                 <span className="text-xs font-bold text-gray-600 tracking-wide">حقول إضافية</span>
               </div>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 {extraKeys.map(k => (
-                  <FieldCell
-                    key={k}
-                    fieldKey={k}
-                    value={data[k]}
-                    wide={false}
-                  />
+                  <FieldCell key={k} fieldKey={k} value={data[k]} wide={false} />
                 ))}
               </div>
             </div>
@@ -221,10 +204,10 @@ export default function DetailsModal({ row, headers = [], onClose, onDelete }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 bg-gray-50/80 shrink-0">
-          <div className="flex flex-col gap-0.5">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
+          <div className="flex flex-col gap-0.5 min-w-0">
             {row.created_by && (
-              <span className="text-[11px] text-gray-400">
+              <span className="text-[11px] text-gray-400 truncate">
                 أضافه: <span className="font-medium text-gray-600">{row.created_by}</span>
               </span>
             )}
@@ -236,7 +219,7 @@ export default function DetailsModal({ row, headers = [], onClose, onDelete }) {
           </div>
           <button
             onClick={onClose}
-            className="px-6 py-2 text-xs font-bold text-white bg-[#1d6f42] hover:bg-[#155233] rounded-xl transition-all"
+            className="px-5 sm:px-6 py-2.5 text-xs font-bold text-white bg-[#1d6f42] hover:bg-[#155233] rounded-xl transition-all flex-shrink-0"
           >
             إغلاق
           </button>

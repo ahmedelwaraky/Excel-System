@@ -85,7 +85,6 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
   const prefix    = TYPE_PREFIX[form.type] || "";
   const typeStyle = TYPE_COLOR[form.type]  || { bg: "#f3f4f6", text: "#6b7280", border: "#e5e7eb" };
 
-  /* ── Validation ─────────────────────────── */
   function validate() {
     const e = {};
     if (!form.type)              e.type        = true;
@@ -96,7 +95,6 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
     return Object.keys(e).length === 0;
   }
 
-  /* ── Submit ─────────────────────────────── */
   async function handleSubmit() {
     if (!validate()) return;
     setSaving(true);
@@ -105,7 +103,6 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
     setSaving(false);
   }
 
-  /* ── File handling ──────────────────────── */
   function handleFiles(e) {
     setFiles(p => [...p, ...Array.from(e.target.files)]);
   }
@@ -115,28 +112,27 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
 
   const errCls = k => errors[k] ? " border-red-300 focus:border-red-400 focus:ring-red-100" : "";
 
-  /* ── Render ─────────────────────────────── */
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 sm:p-3"
       dir="rtl"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="w-full max-w-2xl bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden"
-        style={{ maxHeight: "92vh" }}
+        className="w-full sm:max-w-2xl bg-white sm:rounded-xl shadow-2xl flex flex-col overflow-hidden
+                   rounded-t-2xl"
+        style={{ maxHeight: "95vh", height: "95vh" }}
       >
 
-        {/* ── Header ───────────────────────────── */}
-        <div className="flex items-center justify-between px-5 py-3.5 bg-[#1d6f42]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 bg-[#1d6f42] flex-shrink-0">
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all text-lg leading-none"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all text-xl leading-none"
           >×</button>
 
           <span className="text-white font-bold text-sm">مكاتبة جديدة</span>
 
-          {/* Type badge — فاضي لو مش مختار */}
           {form.type ? (
             <span
               className="text-[11px] font-bold px-2.5 py-1 rounded-full"
@@ -145,19 +141,18 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
               {prefix} {form.type}
             </span>
           ) : (
-            <span className="text-[11px] text-white/30 px-2.5 py-1">— اختر النوع —</span>
+            <span className="text-[11px] text-white/30 px-2.5 py-1 hidden sm:block">— اختر النوع —</span>
           )}
         </div>
 
-        {/* ── Body ─────────────────────────────── */}
-        <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5">
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 px-4 sm:px-5 py-4 space-y-5">
 
           {/* §1 البيانات الأساسية */}
           <section>
             <SectionHeader title="البيانات الأساسية" />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-              {/* نوع المكاتبة */}
               <Field label="نوع المكاتبة" required>
                 <select
                   value={form.type}
@@ -170,7 +165,6 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
                 {errors.type && <p className="text-[10px] text-red-400 mt-1">نوع المكاتبة مطلوب</p>}
               </Field>
 
-              {/* رقم المكاتبة */}
               <Field label="رقم المكاتبة" required>
                 <div className="flex items-center gap-1">
                   <span
@@ -190,22 +184,19 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
                 {errors.refNumber && <p className="text-[10px] text-red-400 mt-1">رقم المكاتبة مطلوب</p>}
               </Field>
 
-              {/* تاريخ المكاتبة */}
               <Field label="تاريخ المكاتبة" required>
                 <input type="date" value={form.date}
                   onChange={e => set("date", e.target.value)}
                   className={inputCls + " [color-scheme:light]"} />
               </Field>
 
-              {/* تاريخ الاستلام */}
               <Field label="تاريخ الاستلام">
                 <input type="date" value={form.receiveDate}
                   onChange={e => set("receiveDate", e.target.value)}
                   className={inputCls + " [color-scheme:light]"} />
               </Field>
 
-              {/* الموضوع */}
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2">
                 <Field label="الموضوع" required>
                   <textarea
                     value={form.subject}
@@ -223,7 +214,7 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
           {/* §2 الجهة المراسلة */}
           <section>
             <SectionHeader title="الجهة المراسلة" />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="الجهة الرئيسية" required>
                 <input type="text" value={form.mainEntity}
                   onChange={e => set("mainEntity", e.target.value)}
@@ -243,8 +234,7 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
           {/* §3 التصنيف والحفظ */}
           <section>
             <SectionHeader title="التصنيف والحفظ" />
-            <div className="grid grid-cols-2 gap-3">
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="دوسية الحفظ">
                 <input type="text" value={form.archiveNumber}
                   onChange={e => set("archiveNumber", e.target.value)}
@@ -294,7 +284,7 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
               title={prevSectionLabel}
               subtitle="اختياري — يُملأ عند الإشارة لمكاتبة سابقة"
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="تاريخ المكاتبة السابقة">
                 <input type="date" value={form.prevDate}
                   onChange={e => set("prevDate", e.target.value)}
@@ -308,7 +298,7 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
                   className={inputCls} />
               </Field>
 
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2">
                 <Field label="موضوع المكاتبة السابقة">
                   <textarea
                     value={form.prevSubject}
@@ -329,7 +319,7 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
 
               <div
                 onClick={() => fileRef.current.click()}
-                className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-[#1d6f42]/40 hover:bg-[#f0fdf4]/50 transition-all"
+                className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-[#1d6f42]/40 hover:bg-[#f0fdf4]/50 transition-all active:bg-[#f0fdf4]"
               >
                 <p className="text-2xl mb-1">📁</p>
                 <p className="text-xs font-semibold text-gray-500">اضغط لإضافة مرفقات</p>
@@ -341,7 +331,7 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
                 <div className="space-y-1.5">
                   {files.map((f, i) => (
                     <div key={i} className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
-                      <button onClick={() => removeFile(i)} className="text-gray-300 hover:text-red-400 transition-colors text-sm leading-none">✕</button>
+                      <button onClick={() => removeFile(i)} className="text-gray-300 hover:text-red-400 transition-colors text-sm leading-none p-1">✕</button>
                       <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
                         <span className="text-sm">{f.type.includes("pdf") ? "📄" : "🖼️"}</span>
                         <span className="text-xs text-gray-600 truncate">{f.name}</span>
@@ -365,8 +355,8 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
           </section>
         </div>
 
-        {/* ── Footer ───────────────────────────── */}
-        <div className="flex items-center gap-2 px-5 py-3 border-t border-gray-100 bg-gray-50/60">
+        {/* Footer */}
+        <div className="flex items-center gap-2 px-4 sm:px-5 py-3 border-t border-gray-100 bg-gray-50/60 flex-shrink-0 pb-safe">
           <div className="flex-1 flex items-center gap-1.5 min-w-0">
             {form.type ? (
               <span
@@ -376,23 +366,23 @@ export default function CorrespondenceModal({ onConfirm, onClose, currentUser })
                 {prefix}{form.refNumber || "—"}
               </span>
             ) : (
-              <span className="text-[10px] text-gray-300 shrink-0">— اختر النوع أولاً —</span>
+              <span className="text-[10px] text-gray-300 shrink-0 hidden sm:block">— اختر النوع أولاً —</span>
             )}
-            <span className="text-[10px] text-gray-400 truncate">
+            <span className="text-[10px] text-gray-400 truncate hidden sm:block">
               {form.subject || "لم يُحدد الموضوع بعد"}
             </span>
           </div>
 
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 rounded-lg transition-all"
+            className="px-4 py-2.5 text-xs text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 rounded-lg transition-all"
           >
             إلغاء
           </button>
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="px-5 py-2 text-xs font-bold text-white bg-[#1d6f42] hover:bg-[#155233] rounded-lg transition-all disabled:opacity-60 flex items-center gap-1.5"
+            className="px-5 py-2.5 text-xs font-bold text-white bg-[#1d6f42] hover:bg-[#155233] rounded-lg transition-all disabled:opacity-60 flex items-center gap-1.5"
           >
             {saving
               ? <><span className="animate-spin">⟳</span> جاري الحفظ...</>
